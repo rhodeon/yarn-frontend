@@ -19,8 +19,8 @@ function SignUp() {
             firstName: firstName,
             lastName: lastName,
             password: password,
-            username: username,
-            email: email
+            username: username.toLowerCase(),
+            email: email.toLowerCase()
         }
         try {
             const response = await axios.post("http://localhost:8000/users/signup", payload)

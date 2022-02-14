@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react'
-import {useDispatch, useSelector} from 'react-redux'
+import {useDispatch, useSelector, connect} from 'react-redux'
 import Tour from 'reactour'
 import SidebarIndex from "./Sidebars/index"
 import Navigation from "./Navigation"
@@ -8,11 +8,16 @@ import Chat from "./Partials/Chat"
 import {pageTourAction} from "../Store/Actions/pageTourAction"
 import {profileAction} from "../Store/Actions/profileAction";
 
-function Layout() {
+function Layout(props) {
 
     const {pageTour} = useSelector(state => state);
-
-    const dispatch = useDispatch();
+    const dispatch = useDispatch()    
+    
+    useEffect(() =>{
+        if (!props.isAuth) {
+            window.location.href = "/sign-in"
+        }
+    },[props.isAuth])
 
     useEffect(() => {
         document.querySelector('*').addEventListener('click', (e) => {
@@ -33,6 +38,7 @@ function Layout() {
             document.body.classList.add('dark');
             document.body.classList.add('rtl');
         }
+        
     }, []);
 
     const tourSteps = [
@@ -61,8 +67,8 @@ function Layout() {
             content: 'Here you can manage your personal information and settings.',
         }
     ];
-
     return (
+        
         <div className="layout">
             <Tour
                 steps={tourSteps}
@@ -79,4 +85,14 @@ function Layout() {
     )
 }
 
-export default Layout
+const mapStateToProps = (state) => {
+    return {
+      isAuth : state.auth.token ? true : false,
+      token: state.auth.token
+    }
+  }
+  
+
+  
+  
+export default connect(mapStateToProps)(Layout)

@@ -4,6 +4,7 @@ import ChatsIndex from "./Chats"
 import FriendsIndex from "./Friends"
 import FavoritesIndex from "./Favorites"
 import ArchivedIndex from "./Archived"
+import RequestsIndex from "./Requests"
 
 function Index() {
 
@@ -21,6 +22,8 @@ function Index() {
                         return <FavoritesIndex/>
                     } else if (selectedSidebar === 'Archived') {
                         return <ArchivedIndex/>
+                    } else if (selectedSidebar === 'Requests') {
+                        return <RequestsIndex/>
                     }
                 })()
             }

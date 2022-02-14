@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React from 'react'
 import {
     BrowserRouter as Router,
     Routes,
@@ -16,7 +16,8 @@ import * as authActions from "./Store/Actions/authAction"
 
 
 function App(props) {
-    useEffect(() => props.checkAuthState(), []);
+    props.checkAuthState()
+
     return (
         <Router>
             <Routes>

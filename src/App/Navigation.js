@@ -62,7 +62,7 @@ function Navigation(props) {
         }else if (getDemoParam === 'settings') {
             setSettingsModalOpen(true)
         }
-    }, []);
+    }, [auth.token]);
 
     const editModalToggle = () => setEditModalOpen(!editModalOpen);
 
@@ -93,6 +93,10 @@ function Navigation(props) {
         {
             name: 'Archived',
             icon: <FeatherIcon.Archive/>,
+        },
+        {
+            name: 'Requests',
+            icon: <FeatherIcon.UserPlus/>,
         }
     ];
 
@@ -194,7 +198,7 @@ function Navigation(props) {
 
 const mapStateToProps = (state) => {
     return {
-      avatar : state.auth.profile.avatar
+      avatar : state?.auth?.profile?.avatar
     }
   }
   

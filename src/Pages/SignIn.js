@@ -12,11 +12,6 @@ function SignIn(props) {
     const navigate = useNavigate()
 
     useEffect(() => document.body.classList.add('form-membership'), []);
-    useEffect(() =>{
-        if(props.isAuth){
-            return navigate(props.redirect)
-        }
-    }, [props.isAuth])
 
     return (
         <div className="form-wrapper">
@@ -86,4 +81,4 @@ const mapStateToProps = (state) => {
   }
   
   
-  export default connect(mapStateToProps, mapDispatchToProps)(SignIn)
+export default connect(mapStateToProps, mapDispatchToProps)(SignIn)

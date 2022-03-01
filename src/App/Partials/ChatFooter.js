@@ -22,24 +22,24 @@ function ChatFooter(props) {
 
     return (
         <div className="chat-footer">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) =>{
+                e.preventDefault()
+                props.handleSubmit()
+            }}>
                 <div>
                     <Button color="light" className="mr-3" title="Emoji">
                         <FeatherIcon.Smile/>
                     </Button>
                 </div>
-                <Input type="text" className="form-control" placeholder="Write a message." value={message}
-                       onChange={(e) => setMessage(e.target.value)}/>
+                <Input type="text" className="form-control" placeholder="Write a message." value={props.inputMsg}
+                       onChange={(e) => props.handleChange(e.target.value)}/>
                 <div className="form-buttons">
                     {/* <Button color="light">
                         <FeatherIcon.Paperclip/>
                     </Button> */}
-                   {!(message.length > 0) ? <Button color="primary">
-                        <FeatherIcon.Mic/>
-                    </Button> :
-                    <Button color="primary">
+                    <Button color="primary" disabled={props.inputMsg === "" ? true : false} onClick={props.handleSubmit}>
                         <FeatherIcon.Send/>
-                    </Button>}
+                    </Button>
                 </div>
             </form>
         </div>

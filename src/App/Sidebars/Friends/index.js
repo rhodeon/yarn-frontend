@@ -1,12 +1,25 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import * as FeatherIcon from 'react-feather'
 import 'react-perfect-scrollbar/dist/css/styles.css'
+import {connect} from "react-redux"
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import AddFriendsModal from "../../Modals/AddFriendModal"
 import FriendsDropdown from "./FriendsDropdown"
-import {friendLists} from "./Data"
+import PageLoader from "../../../utils/PageLoader"
+import Error from "../../../utils/Error"
+import Avatar from "../../../utils/Avatar"
+import Empty from "../../../utils/Empty"
+import * as actions from "../../../Store/Actions/friendAction"
 
-function Index() {
+
+function Index(props) {
+    useEffect(() => {
+        if(!props.friends){
+            props.getFriends()
+        }
+    },[props.friends])
+
+    
 
     const mobileMenuBtn = () => document.body.classList.toggle('navigation-open');
 
@@ -28,32 +41,52 @@ function Index() {
             <form>
                 <input type="text" className="form-control" placeholder="Search friends"/>
             </form>
-            <div className="sidebar-body">
-                <PerfectScrollbar>
-                    <ul className="list-group list-group-flush">
-                        {
-                            friendLists.map((item, i) => {
-                                return <li key={i} className="list-group-item">
-                                    {item.avatar}
-                                    <div className="users-list-body">
-                                        <div>
-                                            <h5>{item.name}</h5>
-                                            <p>{item.title}</p>
-                                        </div>
-                                        <div className="users-list-action">
-                                            <div className="action-toggle">
-                                                <FriendsDropdown/>
+            <PageLoader loading={props.loading}>
+                <Error error={props.error}>
+                    <div className="sidebar-body">
+                        <PerfectScrollbar>
+                            <ul className="list-group list-group-flush">
+                                {props.friends && props.friends?.length > 0 ?
+                                    props.friends.map((item, i) => {
+                                        return <li key={i} className="list-group-item">
+                                            <Avatar source={item.avatarURL}/>
+                                            <div className="users-list-body">
+                                                <div>
+                                                <h5>{item.firstName + " " + item.lastName}</h5>
+                                                <p>{item.status}</p>
+                                                </div>
+                                                <div className="users-list-action">
+                                                    <div className="action-toggle">
+                                                        <FriendsDropdown profile={item}/>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </li>
-                            })
-                        }
-                    </ul>
-                </PerfectScrollbar>
-            </div>
+                                        </li>
+                                    })
+                                : <Empty message={
+                                    <span>No friends found. Click <FeatherIcon.UserPlus/> to add friends</span>
+                                }/>}
+                            </ul>
+                        </PerfectScrollbar>
+                    </div>
+                </Error>
+            </PageLoader>
         </div>
     )
 }
 
-export default Index
+const mapStateToProps = (state) => {
+    return {
+      friends : state.friends.friends,
+      loading: state.friends.loading,
+      error: state.friends.error
+    }
+  }
+
+  const mapDispatchToProps = dispatch => {
+    return {
+      getFriends:() => dispatch(actions.getFriends()),
+    }
+  }
+  
+export default connect(mapStateToProps, mapDispatchToProps)(Index)

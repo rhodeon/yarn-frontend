@@ -1,12 +1,16 @@
 import React, {useEffect, useState} from 'react'
 import ChatHeader from "./ChatHeader"
 import ChatFooter from "./ChatFooter"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheckDouble, faCheck } from '@fortawesome/free-solid-svg-icons'
 import PerfectScrollbar from "react-perfect-scrollbar"
 import UnselectedChat from '../../assets/img/unselected-chat.svg'
-import {useSelector} from "react-redux"
+import {useSelector, connect} from "react-redux"
+import {createSocket} from "../../Store/Actions/authAction"
+import {getFriends, updateMessages} from "../../Store/Actions/friendAction"
+import Empty from "../../utils/Empty"
 
-function Chat() {
-
+function Chat(props) {
     const {selectedChat} = useSelector(state => state);
 
     const [inputMsg, setInputMsg] = useState('');
@@ -19,9 +23,78 @@ function Chat() {
         }
     }, [scrollEl]);
 
-    const handleSubmit = (newValue) => {
-        selectedChat.messages.push(newValue);
-        setInputMsg("");
+    useEffect(() => {
+        if(props.conn === null){
+            props.createSocket(props.uid)
+        }
+        if(selectedChat.selectedChat.unreadMessages && props.inView){
+
+            props.updateMessages(
+                props.conn,
+                props.uid,
+                selectedChat.selectedChat.ID,
+                "read",
+                props.inView
+            )
+        }
+    }, [
+        props.conn, 
+        props.uid, 
+        props.inView,
+        selectedChat.selectedChat?.ID,
+        selectedChat.selectedChat.unreadMessages
+    ])
+
+    const messageStatus = (message) =>{
+        if(message.sender === props.uid){
+            if(!message.delivered && !message.read){
+                return <FontAwesomeIcon icon={faCheck} color="#828282"/>
+            } else if(message.delivered && !message.read){
+                return <FontAwesomeIcon icon={faCheckDouble} color="#828282"/>
+            } else {
+                return <FontAwesomeIcon icon={faCheckDouble} color="#0a80ff"/>
+            }
+        } else {
+           return null
+        }
+    }
+
+    const formatTime = (date) =>{
+        return new Date(date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+    }
+
+    const formatDate = (prevDate, date) =>{
+        if(new Date(prevDate).getDate() === new Date(date).getDate()){
+            return null
+        } else {
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ]
+            const difference = new Date().getDate() - new Date(date).getDate()
+            if (difference < 1) {
+                return "Today"
+            } else if (difference === 1) {
+                return "Yesterday"
+            } else {
+                const d = new Date(date)
+                return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
+            }
+        }
+    }
+
+    const handleSubmit = () => {
+        const payload = {
+            recipientID: selectedChat.selectedChat.ID,
+            sender: props.uid,
+            content: inputMsg,
+            createdAt : new Date(Date.now())
+        }
+
+        // selectedChat.selectedChat.messages.push(inputMsg);
+        if(inputMsg !== ""){
+            props.conn.send(JSON.stringify(payload))
+            setInputMsg("")
+        } 
     };
 
     const handleChange = (newValue) => {
@@ -38,49 +111,50 @@ function Chat() {
 
     const MessagesView = (props) => {
         const {message} = props;
-
-        if (message.type === 'divider') {
-            return <div className="message-item messages-divider sticky-top" data-label={message.text}></div>
-        } else {
-            return <div className={"message-item " + message.type}>
-                <div className="message-avatar">
-                    {message.avatar}
-                    <div>
-                        <h5>{message.name}</h5>
-                        <div className="time">
-                            {message.date}
-                            {message.type ? <i className="ti-double-check text-info"></i> : null}
-                        </div>
-                    </div>
-                </div>
+        return <>
+            {formatDate(props.prevDate, message.createdAt) ? <div className="message-item messages-divider sticky-top" data-label={formatDate(props.prevDate, message.createdAt)} style={{margin: "30px 0"}}></div> : null}
+            <div className={`message-item ${props.uid === message.sender ? "outgoing-message" : ""}`}>
                 {
                     message.media
                         ?
                         message.media
                         :
                         <div className="message-content">
-                            {message.text}
+                            {message.content}
                         </div>
                 }
+                <div className="message-avatar">
+                    <div className="time">
+                        {formatTime(message.createdAt)}
+                    </div>
+                    <div>
+                    {messageStatus(message)}
+                    </div>
+                </div>
+                
             </div>
-        }
+        </>
     };
 
     return (
         <div className="chat">
             {
-                selectedChat.name
+                selectedChat.selectedChat.firstName
                     ?
                     <React.Fragment>
-                        <ChatHeader selectedChat={selectedChat}/>
+                        <ChatHeader selectedChat={selectedChat.selectedChat}/>
                         <PerfectScrollbar containerRef={ref => setScrollEl(ref)}>
                             <div className="chat-body">
                                 <div className="messages">
                                     {
-                                        selectedChat.messages
+                                        selectedChat.selectedChat.messages
                                             ?
-                                            selectedChat.messages.map((message, i) => {
-                                                return <MessagesView message={message} key={i}/>
+                                            selectedChat.selectedChat.messages.map((message, i) => {
+                                                let prevDate = null 
+                                                if (i !== 0) {
+                                                    prevDate = selectedChat.selectedChat.messages[i-1].createdAt
+                                                }
+                                                return <MessagesView message={message} key={i} uid={props.uid} prevDate={prevDate}/>
                                             })
                                             :
                                             null
@@ -88,20 +162,30 @@ function Chat() {
                                 </div>
                             </div>
                         </PerfectScrollbar>
-                        <ChatFooter onSubmit={handleSubmit} onChange={handleChange} inputMsg={inputMsg}/>
+                        <ChatFooter handleSubmit={handleSubmit} handleChange={handleChange} inputMsg={inputMsg}/>
                     </React.Fragment>
                     :
-                    <div className="chat-body no-message">
-                        <div className="no-message-container">
-                            <div className="row mb-5">
-                                <img src={UnselectedChat} width={200} className="img-fluid" alt="unselected"/>
-                            </div>
-                            <p className="lead">Select a chat to read messages</p>
-                        </div>
-                    </div>
+                    <Empty message="Select a chat to read messages" showImg/>
             }
         </div>
     )
 }
 
-export default Chat
+const mapStateToProps = (state) => {
+    return {
+      conn: state.auth.websocket,
+      uid: state.auth.userID,
+      inView: state.selectedChat.inView
+    }
+  }
+  
+  const mapDispatchToProps = dispatch => {
+    return {
+      createSocket: (uid) => dispatch(createSocket(uid)),
+      getFriends: () => dispatch(getFriends()),
+      updateMessages:(conn, recipient, sender, type, inView) => inView ? dispatch(updateMessages(conn, recipient, sender, type, inView)) : null
+    }
+  }
+  
+  
+export default connect(mapStateToProps, mapDispatchToProps)(Chat)

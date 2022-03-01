@@ -4,6 +4,7 @@ import {Link, useNavigate} from "react-router-dom"
 import {connect} from "react-redux"
 import * as actions from "../Store/Actions/authAction"
 import Loader from "../utils/Loader"
+import Error from "../utils/Error"
 
 function SignIn(props) {
 
@@ -12,6 +13,9 @@ function SignIn(props) {
     const navigate = useNavigate()
 
     useEffect(() => document.body.classList.add('form-membership'), []);
+    if (props.isAuth) {
+        navigate("/")
+    }
 
     return (
         <div className="form-wrapper">
@@ -19,6 +23,7 @@ function SignIn(props) {
                 <Logo/>
             </div>
             <h5>Sign in</h5>
+            <Error error={props.error}></Error>
             <form
                 onSubmit={(e)=>{
                     e.preventDefault()
@@ -34,7 +39,7 @@ function SignIn(props) {
                         value={email} 
                         className="form-control" 
                         placeholder="Email"
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => setEmail(e.target.value.toLowerCase())}
                     />
                 </div>
                 <div className="form-group">
@@ -61,6 +66,7 @@ function SignIn(props) {
                 <p className="text-muted">Don't have an account?</p>
                 <Link to="/sign-up" className="btn btn-outline-light btn-sm">Register now!</Link>
             </form>
+            
         </div>
     )
 }

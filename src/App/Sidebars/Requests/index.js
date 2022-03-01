@@ -9,6 +9,7 @@ import RequestsDropdown from "./RequestsDropdown"
 import PageLoader from "../../../utils/PageLoader"
 import Error from "../../../utils/Error"
 import Avatar from "../../../utils/Avatar"
+import Empty from "../../../utils/Empty"
 import axios from "../../../utils/Axios"
 
 function Index() {
@@ -24,34 +25,33 @@ function Index() {
     const toggle = tab => {
         if (activeTab !== tab) setActiveTab(tab);
     };
-
-    useEffect(() =>{
-        const fetchData = async() =>{
-            if(activeTab === "1"){
-                setLoading(true)
-                try {
-                    const response = await axios.get("users/request/sent")
-                    setLoading(false)
-                    setSentRequests(response.data)
-                } catch (error) {
-                    setLoading(false)
-                    setError(error)
-                }
-            } else if(activeTab === "2"){
-                setLoading(true)
-                try {
-                    const response = await axios.get("users/request/received")
-                    setLoading(false)
-                    setReceivedRequests(response.data)
-                } catch (error) {
-                    setLoading(false)
-                    setError(error)
-                }
+    const fetchData = async() =>{
+        if(activeTab === "1"){
+            setLoading(true)
+            try {
+                const response = await axios.get("users/request/sent")
+                setLoading(false)
+                setSentRequests(response.data)
+            } catch (error) {
+                setLoading(false)
+                setError(error)
             }
-
+        } else if(activeTab === "2"){
+            setLoading(true)
+            try {
+                const response = await axios.get("users/request/received")
+                setLoading(false)
+                setReceivedRequests(response.data)
+            } catch (error) {
+                setLoading(false)
+                setError(error)
+            }
         }
-        fetchData()
-    }, [activeTab, auth.token])
+
+    }
+    useEffect(() =>{
+        fetchData() 
+    }, [activeTab])
 
     return (
         <div className="sidebar active">
@@ -92,7 +92,7 @@ function Index() {
                             <TabContent activeTab={activeTab}>
                                 <TabPane tabId="1">
                                     <ul className="list-group list-group-flush">
-                                    {sentRequests ?
+                                    {sentRequests && sentRequests?.length ?
                                             sentRequests.map((item, i) => {
                                                 return <li key={i} className="list-group-item">
                                                     <Avatar source={item.recipient.avatarURL}/>
@@ -103,13 +103,15 @@ function Index() {
                                                         </div>
                                                         <div className="users-list-action">
                                                             <div className="action-toggle">
-                                                                <RequestsDropdown received/>
+                                                                <RequestsDropdown ID={item._id} fetch={fetchData}/>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </li>
                                             })
-                                        : null}
+                                        : <Empty message={
+                                            <span>No requests found</span>
+                                        }/>}
                                     </ul>
                                 </TabPane>
                                 <TabPane tabId="2">
@@ -121,7 +123,7 @@ function Index() {
                                                     <div className="users-list-body">
                                                     <div className="users-list-action">
                                                                 <div className="action-toggle">
-                                                                    <RequestsDropdown/>
+                                                                    <RequestsDropdown received ID={item._id} fetch={fetchData}/>
                                                                 </div>
                                                         </div>
                                                         <div>
@@ -137,7 +139,9 @@ function Index() {
                                                     </div>
                                                 </li>
                                             })
-                                        : null}
+                                        : <Empty message={
+                                            <span>No requests found.</span>
+                                        }/>}
                                     </ul>
                                 </TabPane>
                             </TabContent>

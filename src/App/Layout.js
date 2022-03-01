@@ -1,30 +1,33 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {useDispatch, useSelector, connect} from 'react-redux'
 import Tour from 'reactour'
 import SidebarIndex from "./Sidebars/index"
 import Navigation from "./Navigation"
 import Profile from "./Sidebars/Profile"
 import Chat from "./Partials/Chat"
+import DisconnectedModal from "../App/Modals/DisconnectedModal"
 import {pageTourAction} from "../Store/Actions/pageTourAction"
 import {profileAction} from "../Store/Actions/profileAction";
+import {disconnectedAction} from "../Store/Actions/disconnectedAction";
 
 function Layout(props) {
-
     const {pageTour} = useSelector(state => state);
-    const dispatch = useDispatch()    
-    
-    useEffect(() =>{
-        if (!props.isAuth) {
-            window.location.href = "/sign-in"
-        }
-    },[props.isAuth])
+    const dispatch = useDispatch() 
+    const [connected, setConnected] = useState(false)   
 
     useEffect(() => {
         document.querySelector('*').addEventListener('click', (e) => {
             if (document.body.classList.contains('navigation-open') && e.target.nodeName === 'BODY') {
                 document.body.classList.remove('navigation-open')
             }
-        });
+        // const setup = async() =>{
+        //     console.log("creating");
+        //     const conn = await new WebSocket(`ws://localhost:8282/ws?uid=${props.uid}`)
+        //     console.log(conn);
+        //     setConn(conn)
+        // }
+        // setup() 
+        },[props.uid]);    
 
         let getDemoParam = (window.location.search).replace('?demo=', '');
 
@@ -40,6 +43,18 @@ function Layout(props) {
         }
         
     }, []);
+
+    useEffect(() =>{
+        if (connected && props.readyState === 0) {
+            dispatch(disconnectedAction(true))
+        } else if (props.readyState === 1){
+            setConnected(true)
+        }
+    }, [props.readyState])
+
+    if (!props.isAuth) {
+        return window.location.href = "/sign-in"
+    }
 
     const tourSteps = [
         {
@@ -67,6 +82,7 @@ function Layout(props) {
             content: 'Here you can manage your personal information and settings.',
         }
     ];
+
     return (
         
         <div className="layout">
@@ -75,6 +91,7 @@ function Layout(props) {
                 isOpen={pageTour}
                 onRequestClose={() => dispatch(pageTourAction(false))}
             />
+            <DisconnectedModal />
             <div className="content">
                 <Navigation/>
                 <SidebarIndex/>
@@ -88,11 +105,10 @@ function Layout(props) {
 const mapStateToProps = (state) => {
     return {
       isAuth : state.auth.token ? true : false,
-      token: state.auth.token
+      token: state.auth.token,
+      uid: state.auth.userID,
+      readyState: state.auth.websocket?.readyState ? state.auth.websocket.readyState : 0
     }
   }
-  
-
-  
   
 export default connect(mapStateToProps)(Layout)

@@ -44,7 +44,7 @@ function EditProfileModal(props) {
         try {
           const response = await axios({
             method: "post",
-            url: "http://localhost:8000/users/profile",
+            url: "http://192.168.43.236:8000/users/profile",
             data: formData,
             headers: { "Content-Type": "multipart/form-data", Authorization: props.token},
           });

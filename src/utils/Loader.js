@@ -1,9 +1,9 @@
 import React from 'react'
 
-const Loader = () => {
+const Loader = ({small, primary}) => {
   return (
-    <div class="spinner-border text-light">
-        <span class="sr-only">Loading...</span>
+    <div className={`spinner-border ${small ? "spinner-border-sm" : ""} text-${primary ? "primary" : "light"}`}>
+        <span className="sr-only">Loading...</span>
     </div>
   )
 }

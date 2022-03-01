@@ -1981,7 +1981,8 @@ body.rtl {
           align-items: flex-start; }
           .layout .content .chat .chat-body .messages .message-item {
             max-width: 75%;
-            margin-bottom: 3rem; }
+            /* margin-bottom: 3rem; */
+           }
             .layout .content .chat .chat-body .messages .message-item:last-child {
               margin-bottom: 0; }
             .layout .content .chat .chat-body .messages .message-item .message-avatar {
@@ -1995,6 +1996,7 @@ body.rtl {
                 margin-bottom: 0; }
               .layout .content .chat .chat-body .messages .message-item .message-avatar .time {
                 color: #828282;
+                margin-right: 10px;
                 margin-top: 2px;
                 font-style: italic;
                 font-size: 12px; }

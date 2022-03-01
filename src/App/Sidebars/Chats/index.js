@@ -1,5 +1,5 @@
-import React, {useState} from 'react'
-import {useDispatch, useSelector} from "react-redux"
+import React, {useState, useEffect} from 'react'
+import {useDispatch, useSelector, connect} from "react-redux"
 import * as FeatherIcon from 'react-feather'
 import {Tooltip} from 'reactstrap'
 import 'react-perfect-scrollbar/dist/css/styles.css'
@@ -7,41 +7,81 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import AddGroupModal from "../../Modals/AddGroupModal"
 import ChatsDropdown from "./ChatsDropdown"
 import {sidebarAction} from "../../../Store/Actions/sidebarAction"
-import {chatLists} from "./Data";
 import {selectedChatAction} from "../../../Store/Actions/selectedChatAction";
+import {updateMessages} from "../../../Store/Actions/friendAction";
+import Avatar from "../../../utils/Avatar"
+import Empty from "../../../utils/Empty"
+import * as actions from "../../../Store/Actions/friendAction"
 
-function Index() {
-
+function Index(props) {
     const dispatch = useDispatch();
-
-    const {selectedChat} = useSelector(state => state);
+    
+    const {selectedChat, auth} = useSelector(state => state);
 
     const [tooltipOpen, setTooltipOpen] = useState(false);
 
     const toggle = () => setTooltipOpen(!tooltipOpen);
 
     const chatSelectHandle = (chat) => {
-        chat.unread_messages = 0;
         dispatch(selectedChatAction(chat));
         document.querySelector('.chat').classList.add('open');
     };
 
+    useEffect(() =>{
+        props.getFriends()
+    },[window.location.href])
+
+    useEffect(() => {
+        if(!props.friends){
+            return props.getFriends()
+        }
+        props.friends.forEach(friend => {
+            if(friend.messages){
+                if (!friend.messages[friend.messages.length - 1].delivered
+                     && friend.messages[friend.messages.length - 1].sender !== props.uid) {
+                    props.updateMessages(
+                        props.conn,
+                        props.uid,
+                        friend.ID,
+                        "delivered"
+                    )
+                }
+            }
+        });
+    },[props.friends, props.conn, props.uid])
+
+
+
+    // useEffect(() => {
+    //     const payload = {
+    //         auth: auth.token
+    //     }
+    //     const createConn = async() =>{
+    //       const conn = new WebSocket("ws://localhost:8000/ws")
+    //       conn.onopen = () =>{
+    //           conn.send(JSON.stringify(payload))
+    //       }
+    //     } 
+    //     createConn()
+    //   }, [])
+    const formatTime = (date) =>{
+        return new Date(date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+    }
+
     const mobileMenuBtn = () => document.body.classList.toggle('navigation-open');
 
-    const ChatListView = (props) => {
-        const {chat} = props;
-
-        return <li className={"list-group-item " + (chat.id === selectedChat.id ? 'open-chat' : '')}
-                   onClick={() => chatSelectHandle(chat)}>
-            {chat.avatar}
+    const ChatListView = ({chat}) => {
+        return <li className={"list-group-item " + (chat.ID === selectedChat.selectedChat.ID ? 'open-chat' : '')}
+                  onClick={() => chatSelectHandle(chat)}>
+                <Avatar source={chat.avatarURL}/>
             <div className="users-list-body">
                 <div>
-                    <h5 className={chat.unread_messages ? 'text-primary' : ''}>{chat.name}</h5>
-                    {chat.text}
+                    <h5 className={chat.unreadMessages ? 'text-primary' : ''}>{chat.firstName + " " + chat.lastName}</h5>
+                    {chat.messages[chat.messages.length-1].content}
                 </div>
                 <div className="users-list-action">
-                    {chat.unread_messages ? <div className="new-message-count">{chat.unread_messages}</div> : ''}
-                    <small className={chat.unread_messages ? 'text-primary' : 'text-muted'}>{chat.date}</small>
+                    {chat.unreadMessages ? <div className="new-message-count">{chat.unreadMessages}</div> : ''}
+                    <small className={chat.unreadMessages ? 'text-primary' : 'text-muted'}>{formatTime(chat.messages[chat.messages.length - 1].createdAt)}</small>
                     <div className="action-toggle">
                         <ChatsDropdown/>
                     </div>
@@ -49,6 +89,13 @@ function Index() {
             </div>
         </li>
     };
+    let friends = !props.friends ? [] : props.friends
+    friends = friends.filter(chat => chat.messages && chat.messages !== []).sort((a,b) =>{
+        const date1 = new Date(a.messages[a.messages.length - 1].createdAt)
+        const date2 = new Date(b.messages[b.messages.length - 1].createdAt)
+        return date2 - date1
+    })
+    const chatList = friends.map((chat, i) => <ChatListView chat={chat} key={i}/>)
 
     return (
         <div className="sidebar active">
@@ -83,15 +130,32 @@ function Index() {
             </form>
             <div className="sidebar-body">
                 <PerfectScrollbar>
-                    <ul className="list-group list-group-flush">
-                        {
-                            chatLists.map((chat, i) => <ChatListView chat={chat} key={i}/>)
-                        }
-                    </ul>
+                {chatList.length > 0 ? <ul className="list-group list-group-flush">
+                        {chatList}
+                    </ul> : <Empty message={
+                        <span>No chat found. Click <FeatherIcon.PlusCircle/> to start a chat</span>
+                    }/>}
                 </PerfectScrollbar>
             </div>
         </div>
     )
 }
 
-export default Index
+const mapStateToProps = (state) => {
+    return {
+      friends : state.friends.friends,
+      loading: state.friends.loading,
+      error: state.friends.error,
+      uid : state.auth.userID,
+      conn: state.auth.websocket
+    }
+  }
+
+  const mapDispatchToProps = dispatch => {
+    return {
+      getFriends:() => dispatch(actions.getFriends()),
+      updateMessages:(conn, recipient, sender, type) => dispatch(updateMessages(conn, recipient, sender, type))
+    }
+  }
+  
+export default connect(mapStateToProps, mapDispatchToProps)(Index)

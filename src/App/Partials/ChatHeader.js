@@ -7,7 +7,9 @@ import * as FeatherIcon from 'react-feather'
 import VoiceCallModal from "../Modals/VoiceCallModal"
 import VideoCallModal from "../Modals/VideoCallModal"
 import {profileAction} from "../../Store/Actions/profileAction"
+import {closeSelectedChat} from "../../Store/Actions/selectedChatAction"
 import {mobileProfileAction} from "../../Store/Actions/mobileProfileAction";
+import Avatar from "../../utils/Avatar"
 
 function ChatHeader(props) {
 
@@ -17,7 +19,10 @@ function ChatHeader(props) {
 
     const toggle = () => setDropdownOpen(prevState => !prevState);
 
-    const selectedChatClose = () => document.querySelector('.chat').classList.remove('open');
+    const selectedChatClose = () => {
+        document.querySelector('.chat').classList.remove('open');
+        dispatch(closeSelectedChat())
+    }
 
     const profileActions = () => {
         dispatch(profileAction(true));
@@ -27,9 +32,9 @@ function ChatHeader(props) {
     return (
         <div className="chat-header">
             <div className="chat-header-user">
-                {props.selectedChat.avatar}
+                <Avatar source={props.selectedChat.avatarURL}/>
                 <div>
-                    <h5>{props.selectedChat.name}</h5>
+                    <h5>{props.selectedChat.firstName + " " + props.selectedChat.lastName}</h5>
                     <small className="text-muted">
                         <i>5 minutes ago</i>
                     </small>

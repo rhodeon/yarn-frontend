@@ -1,35 +1,59 @@
 import React, {useEffect, useState} from "react"
 import Logo from "../Icons/logo"
+import Axios from "../utils/Axios"
 import axios from "axios"
-import {Link} from "react-router-dom"
+import Error from "../utils/Error"
+import {Link, useNavigate} from "react-router-dom"
+import {connect} from "react-redux"
+import Loader from "../utils/Loader"
+import {authSuccess, checkAuthTimeout, storeAuth} from "../Store/Actions/authAction"
 
-function SignUp() {
+function SignUp(props) {
 
-    useEffect(() => document.body.classList.add('form-membership'), []);
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        document.body.classList.add('form-membership')
+        if (props.isAuth) {
+            navigate("/")
+        }
+    }, []);
     
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [firstName, setFirstName] = useState("")
     const [lastName, setLastName] = useState("")
     const [username, setUsername] = useState("")
+    const [error, setError] = useState("")
+    const [loading, setLoading] = useState(false)
     const [confirmPassword, setConfirmPassword] = useState("")
 
     const submitForm = async () =>{
+        setLoading(true)
+        setError(null)
         const payload = {
             firstName: firstName,
             lastName: lastName,
             password: password,
-            username: username.toLowerCase(),
-            email: email.toLowerCase()
+            username: username.toLowerCase().trim(),
+            email: email.toLowerCase().trim()
         }
         try {
-            const response = await axios.post("http://localhost:8000/users/signup", payload)
-            console.log(response.data);
+            const response = await axios.post("http://192.168.43.236:8000/users/signup", payload)
+            props.authSuccess(response.data.token, response.data.userID, response.data.refreshToken, response.data.profile, response.data.expirationTime)
+            storeAuth(
+                response.data.token, 
+                response.data.refreshToken,
+                response.data.expirationTime,
+                response.data.profile,
+                response.data.userID
+            )
+            props.checkAuthTimeout(response.data.expirationTime)
+            setLoading(false)
+            navigate("/")
         } catch (error) {
-            let err = new Error(error);
-            if (error.response) {
-                err = error.response.data
-            }
+            setError(error)
+            setLoading(false)
         }
     }
 
@@ -40,6 +64,7 @@ function SignUp() {
                 <Logo/>
             </div>
             <h5>Create account</h5>
+            <Error error={error}/>
             <form
                 onSubmit={(e)=>{
                     e.preventDefault()
@@ -108,7 +133,7 @@ function SignUp() {
                         onChange={(e) => setUsername(e.target.value)}
                     />
                 </div>
-                <button className="btn btn-primary btn-block">Register</button>
+                <button className="btn btn-primary btn-block">{loading ? <Loader/> : "Register"}</button>
                 <hr/>
                 <p className="text-muted">Already have an account?</p>
                 <Link to="/sign-in" className="btn btn-outline-light btn-sm">Sign in!</Link>
@@ -117,4 +142,19 @@ function SignUp() {
     )
 }
 
-export default SignUp
+const mapStateToProps = (state) => {
+    return {
+      isAuth : state.auth.token ? true : false,
+    }
+  }
+  
+  const mapDispatchToProps = dispatch => {
+    return {
+      authSuccess: ( token, userID, refreshToken, profile) => dispatch(authSuccess(token, userID, refreshToken, profile)),
+      checkAuthTimeout: (time) => dispatch(checkAuthTimeout(time))
+    }
+  }
+  
+  
+export default connect(mapStateToProps, mapDispatchToProps)(SignUp)
+

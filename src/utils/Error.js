@@ -4,16 +4,17 @@ import {Alert} from "reactstrap"
 const ErrorAlert = ({error, children}) => {
         let err = new Error(error);
         if (error?.response) {
-            err = error.response.data
+            err.message = error.response.data.error
         }
+        err.message = err.message === "null" ? null : err.message
   return (
     <>
-      {err?.error ? <div>
+      {err?.message ? <div>
             <Alert
                 color="danger"
                 dismissible
             >
-                {err.error}
+                {err.message}
             </Alert>
         </div> : children}
     </>

@@ -7,6 +7,8 @@ const initialState = {
     profile: null,
     error: null,
     loading: false,
+    websocket: null,
+    socketLoading: false,
     authRedirectPath: '/'
 
 };
@@ -33,7 +35,7 @@ const reducer = ( state = initialState, action ) => {
         case actionTypes.AUTH_FAIL: 
             return {
                 loading: false,
-                error: action.error
+                error: action.error,
             }
         case actionTypes.AUTH_LOGOUT: 
             return {
@@ -41,7 +43,8 @@ const reducer = ( state = initialState, action ) => {
                 userID: null,
                 token: null,
                 refreshToken: null,
-                profile: null
+                profile: null,
+                websocket: null
             }
         case actionTypes.SET_REDIRECT:
             return{
@@ -52,6 +55,23 @@ const reducer = ( state = initialState, action ) => {
             return {
                 ...state,
                 profile: action.payload
+            }
+        case actionTypes.CREATE_SOCKET_START:
+            return {
+                ...state,
+                socketLoading: true
+            }
+        case actionTypes.CREATE_SOCKET_SUCCESS:
+            return {
+                ...state,
+                websocket: action.payload,
+                socketLoading: false
+            }
+        case actionTypes.CREATE_SOCKET_FAIL:
+            return {
+                ...state,
+                websocket: null,
+                socketLoading: false
             }
         default:
             return state;

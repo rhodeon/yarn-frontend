@@ -13,6 +13,8 @@ import {
     Input
 } from 'reactstrap';
 import {useSelector} from "react-redux"
+import Error from "../../utils/Error"
+import Loader from "../../utils/Loader"
 
 // Feather icon
 import * as FeatherIcon from 'react-feather';
@@ -23,6 +25,12 @@ function AddFriendModal() {
 
     const [username, setUsername] = useState("");
 
+    const [error, setError] = useState(null);
+
+    const [success, setSuccess] = useState(false);
+
+    const [loading, setLoading] = useState(false);
+        
     const modalToggle = () => setModal(!modal);
 
     const {auth} = useSelector(state => state);
@@ -32,8 +40,10 @@ function AddFriendModal() {
     const tooltipToggle = () => setTooltipOpen(!tooltipOpen);
 
     const submitForm = async() =>{
+        setSuccess(false)
+        setLoading(true)
         const payload = {
-            username: username.toLowerCase()
+            username: username.toLowerCase().trim()
         }
         const options = {
             headers:{
@@ -41,10 +51,15 @@ function AddFriendModal() {
             }
         }
         try {
-            const response = await axios.post("http://localhost:8000/users/request", payload, options)
-            console.log(response);
+            await axios.post("http://192.168.43.236:8000/users/request", payload, options)
+            setSuccess(true)
+            setError(null)
+            setUsername("")
+            setLoading(false)
         } catch (error) {
-            console.log(error);
+            setError(error)
+            setSuccess(null)
+            setLoading(false)
         }
     }
 
@@ -65,7 +80,8 @@ function AddFriendModal() {
                     <FeatherIcon.UserPlus className="mr-2"/> Add Friends
                 </ModalHeader>
                 <ModalBody>
-                    <Alert color="info">Send friend request</Alert>
+                    {success ? <Alert color="success">Friend request successfully sent.</Alert> : null}
+                    <Error error={error}/>
                     <Form
                         onSubmit={(e) =>{
                             e.preventDefault()
@@ -79,7 +95,7 @@ function AddFriendModal() {
                     </Form>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="primary" onClick={submitForm}>Submit</Button>
+                    <Button color="primary" onClick={submitForm}>{loading ? <Loader/> : "Submit"}</Button>
                 </ModalFooter>
             </Modal>
         </div>

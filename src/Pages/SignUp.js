@@ -40,15 +40,15 @@ function SignUp(props) {
         }
         try {
             const response = await axios.post("http://192.168.43.236:8000/users/signup", payload)
-            props.authSuccess(response.data.token, response.data.userID, response.data.refreshToken, response.data.profile, response.data.expirationTime)
+            props.authSuccess(response.data.token, response.data.userID, response.data.refreshToken, response.data.profile, response.data.expiresAt)
             storeAuth(
                 response.data.token, 
                 response.data.refreshToken,
-                response.data.expirationTime,
+                response.data.expiresAt,
                 response.data.profile,
                 response.data.userID
             )
-            props.checkAuthTimeout(response.data.expirationTime)
+            props.checkAuthTimeout(response.data.expiresAt)
             setLoading(false)
             navigate("/")
         } catch (error) {

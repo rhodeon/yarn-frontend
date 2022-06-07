@@ -51,7 +51,7 @@ function AddFriendModal() {
             }
         }
         try {
-            await axios.post("http://192.168.43.236:8000/users/request", payload, options)
+            await axios.post("http://localhost:8000/users/request", payload, options)
             setSuccess(true)
             setError(null)
             setUsername("")

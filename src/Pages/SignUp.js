@@ -39,7 +39,7 @@ function SignUp(props) {
             email: email.toLowerCase().trim()
         }
         try {
-            const response = await axios.post("http://192.168.43.236:8000/users/signup", payload)
+            const response = await axios.post("http://localhost:8000/users/signup", payload)
             props.authSuccess(response.data.token, response.data.userID, response.data.refreshToken, response.data.profile, response.data.expiresAt)
             storeAuth(
                 response.data.token, 

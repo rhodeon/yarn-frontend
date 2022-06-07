@@ -3,7 +3,7 @@ export const getFriends = () =>{
     return async dispatch => {
         try {
             dispatch({type:"GET_FRIENDS_START"})
-            const response = await fetch("http://192.168.43.236:8000/friends", {
+            const response = await fetch("http://localhost:8000/friends", {
                 method: "GET",
                 headers:{
                     "Content-Type": "application/json",

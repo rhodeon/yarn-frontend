@@ -70,7 +70,7 @@ export const refreshUserToken = (refreshToken) =>{
             const payload = {
                 refreshToken: refreshToken
             }
-            const response = await axios.post("http://192.168.43.236:8000/users/refresh-token", payload)
+            const response = await axios.post("http://localhost:8000/users/refresh-token", payload)
             storeAuth(
                 response.data.token, 
                 response.data.refreshToken,
@@ -95,7 +95,7 @@ export const auth =  (email, password) => {
             password: password,
         };
        try {
-            const response = await axios.post("http://192.168.43.236:8000/users/login", authData)
+            const response = await axios.post("http://localhost:8000/users/login", authData)
             storeAuth(
                 response.data.token, 
                 response.data.refreshToken,
@@ -161,7 +161,7 @@ export const createSocket = (uid) =>{
     return async dispatch => {
         try {
             dispatch({type:actionTypes.CREATE_SOCKET_START})
-            const conn = new WebSocket(`ws://192.168.43.236:8000/ws?uid=${uid}`)
+            const conn = new WebSocket(`ws://localhost:8000/ws?uid=${uid}`)
             conn.onopen = () =>{
                 // interval = resetTimer(dispatch)
                 dispatch({type:actionTypes.CREATE_SOCKET_SUCCESS, payload:conn})

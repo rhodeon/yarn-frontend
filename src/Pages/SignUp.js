@@ -6,6 +6,7 @@ import {Link, useNavigate} from "react-router-dom"
 import {connect} from "react-redux"
 import Loader from "../utils/Loader"
 import {authSuccess, checkAuthTimeout, storeAuth} from "../Store/Actions/authAction"
+import Profile from "../Models/profile";
 
 function SignUp(props) {
 
@@ -39,12 +40,13 @@ function SignUp(props) {
         }
         try {
             const response = await axios.post("http://localhost:8000/users/signup", payload)
-            props.authSuccess(response.data.accessToken, response.data.userID, response.data.refreshToken, response.data.profile, response.data.expiresAt)
+            const profile = new Profile(response.data.profile)
+            props.authSuccess(response.data.accessToken, response.data.userID, response.data.refreshToken, profile, response.data.expiresAt)
             storeAuth(
                 response.data.accessToken,
                 response.data.refreshToken,
                 response.data.expiresAt,
-                response.data.profile,
+                profile,
                 response.data.userID
             )
             props.checkAuthTimeout(response.data.expiresAt)

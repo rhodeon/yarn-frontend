@@ -53,7 +53,7 @@ export const checkAuthTimeout = (expiresAt) => {
     return dispatch => {
         setTimeout(() => {
             const refreshToken = localStorage.getItem('refreshToken')
-            if (refreshToken == "undefined") {
+            if (refreshToken === "undefined") {
                 dispatch(logout())
             } else {
                 dispatch(refreshUserToken(refreshToken)); 
@@ -72,13 +72,13 @@ export const refreshUserToken = (refreshToken) =>{
             }
             const response = await axios.post("http://localhost:8000/users/refresh-token", payload)
             storeAuth(
-                response.data.token, 
+                response.data.accessToken,
                 response.data.refreshToken,
                 response.data.expiresAt,
                 response.data.profile,
                 response.data.userID
             )
-            dispatch(authSuccess(response.data.token, response.data.userID, response.data.refreshToken, response.data.profile));
+            dispatch(authSuccess(response.data.accessToken, response.data.userID, response.data.refreshToken, response.data.profile));
             dispatch(checkAuthTimeout(response.data.expiresAt))
         } catch (error) {
             dispatch(authFail(error));
@@ -97,13 +97,13 @@ export const auth =  (email, password) => {
        try {
             const response = await axios.post("http://localhost:8000/users/login", authData)
             storeAuth(
-                response.data.token, 
+                response.data.accessToken,
                 response.data.refreshToken,
                 response.data.expiresAt,
                 response.data.profile,
                 response.data.userID
             )
-            dispatch(authSuccess(response.data.token, response.data.userID, response.data.refreshToken, response.data.profile));
+            dispatch(authSuccess(response.data.accessToken, response.data.userID, response.data.refreshToken, response.data.profile));
             dispatch(checkAuthTimeout(response.data.expiresAt));
             
        } catch (error) {

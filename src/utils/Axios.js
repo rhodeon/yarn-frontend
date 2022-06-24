@@ -1,11 +1,11 @@
-import axios from "axios"
+import axios from "axios";
 
 const Axios = axios.create({
     baseURL: 'http://localhost:8000/',
     timeout: 1000,
     headers: {
-        Authorization: localStorage.getItem("token")
+        Authorization: `Bearer ${localStorage.getItem("token")}`
     }
-})
+});
 
-export default Axios
+export default Axios;

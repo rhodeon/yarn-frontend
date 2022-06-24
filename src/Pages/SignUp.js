@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react"
 import Logo from "../Icons/logo"
-import Axios from "../utils/Axios"
 import axios from "axios"
 import Error from "../utils/Error"
 import {Link, useNavigate} from "react-router-dom"
@@ -40,9 +39,9 @@ function SignUp(props) {
         }
         try {
             const response = await axios.post("http://localhost:8000/users/signup", payload)
-            props.authSuccess(response.data.token, response.data.userID, response.data.refreshToken, response.data.profile, response.data.expiresAt)
+            props.authSuccess(response.data.accessToken, response.data.userID, response.data.refreshToken, response.data.profile, response.data.expiresAt)
             storeAuth(
-                response.data.token, 
+                response.data.accessToken,
                 response.data.refreshToken,
                 response.data.expiresAt,
                 response.data.profile,

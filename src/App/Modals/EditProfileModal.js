@@ -1,59 +1,65 @@
-import React, {useState} from 'react'
+import React, {useState} from 'react';
 import {
-    Modal,
-    ModalBody,
-    TabContent,
-    TabPane,
-    Nav,
-    NavItem,
-    NavLink,
-    ModalFooter,
     Button,
     Form,
     FormGroup,
-    Label,
-    ModalHeader,
     Input,
     InputGroup,
-} from 'reactstrap'
-import * as FeatherIcon from 'react-feather'
-import {connect} from "react-redux"
-import axios from "axios"
-import classnames from 'classnames'
-import {getProfile} from "../../Store/Actions/authAction"
-import Avatar from "../../utils/Avatar"
+    Label,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+    Nav,
+    NavItem,
+    NavLink,
+    TabContent,
+    TabPane,
+} from 'reactstrap';
+import * as FeatherIcon from 'react-feather';
+import {connect} from "react-redux";
+import classnames from 'classnames';
+import {getProfile} from "../../Store/Actions/authAction";
+import Avatar from "../../utils/Avatar";
+import Axios from "../../utils/Axios";
 
 function EditProfileModal(props) {
     const [activeTab, setActiveTab] = useState('1');
     const [status, setStatus] = useState(props.profile.status);
+    const [firstName, setFirstName] = useState(props.profile.firstName);
+    const [lastName, setLastName] = useState(props.profile.lastName);
     const [about, setAbout] = useState(props.profile.about);
-    const [city, setCity] = useState(props.profile.city);
-    const [selectedFile, setSelectedFile] = React.useState(null);
+    const [avatarFile, setAvatarFile] = React.useState(null);
 
     const toggle = tab => {
         if (activeTab !== tab) setActiveTab(tab);
     };
 
-    const submitForm = async(event) =>{
-        event.preventDefault()
+    const submitForm = async (event) => {
+        event.preventDefault();
+
         const formData = new FormData();
-        formData.append("selectedFile", selectedFile);
+        // TODO: validate firstName and lastName
+        formData.append("firstName", firstName);
+        formData.append("lastName", lastName);
         formData.append("status", status);
         formData.append("about", about);
-        formData.append("city", city);
+        formData.append("avatarFile", avatarFile);
+
         try {
-          const response = await axios({
-            method: "post",
-            url: "http://localhost:8000/users/profile",
-            data: formData,
-            headers: { "Content-Type": "multipart/form-data", Authorization: props.token},
-          });
-          console.log(response);
-          props.getProfile()
-        } catch(error) {
-          console.log(error)
+            const response = await Axios({
+                method: "post",
+                url: "users/profile",
+                data: formData,
+                headers: {"Content-Type": "multipart/form-data"},
+                timeout: 10000,
+            });
+            console.log(response);
+            props.getProfile();
+        } catch (error) {
+            console.log(error);
         }
-      }
+    };
 
     return (
         <div>
@@ -88,63 +94,64 @@ function EditProfileModal(props) {
                         <TabContent activeTab={activeTab}>
                             <TabPane tabId="1">
                                 <FormGroup>
-                                    <Label for="fullname">Fullname</Label>
-                                    <InputGroup>
-                                        <Input value={props.profile.firstName + " " + props.profile.lastName} readOnly/>
-                                    </InputGroup>
+                                    <Label htmlFor={"firstName"}>First Name</Label>
+                                    <Input id={"firstName"} value={firstName}
+                                           onChange={(e) => setFirstName(e.target.value)}/>
                                 </FormGroup>
+
                                 <FormGroup>
-                                    <Label for="fullname">Status</Label>
-                                    <InputGroup>
-                                        <Input value={status} onChange={(e) => setStatus(e.target.value)}/>
-                                    </InputGroup>
+                                    <Label htmlFor={"lastName"}> Last Name</Label>
+                                    <Input id={"lastName"} value={lastName}
+                                           onChange={(e) => setLastName(e.target.value)}/>
                                 </FormGroup>
+
                                 <FormGroup>
-                                    <Label for="avatar">Avatar</Label>
-                                    <InputGroup>
-                                            <div>
-                                                <Avatar source={props.profile.avatar}/>
-                                            </div>
-                                            <Input type="file" accept="image/png, image/jpeg" onChange={(e) => setSelectedFile(e.target.files[0])}/>
-                                    </InputGroup>
+                                    <Label htmlFor={"status"}>Status</Label>
+                                    <Input id={"status"} value={status} onChange={(e) => setStatus(e.target.value)}/>
                                 </FormGroup>
+
                                 <FormGroup>
-                                    <Label for="city">City</Label>
-                                    <InputGroup>
-                                        <Input type="text" onChange={(e) => setCity(e.target.value)} value={city} placeholder="Ex: Columbia"/>
+                                    <Label htmlFor={"avatar"}>Avatar</Label>
+                                    <InputGroup id={"avatar"}>
+                                        <div>
+                                            <Avatar source={props.profile.avatar}/>
+                                        </div>
+                                        <Input type="file" accept="image/png, image/jpeg"
+                                               onChange={(e) => setAvatarFile(e.target.files[0])}/>
                                     </InputGroup>
                                 </FormGroup>
                             </TabPane>
+
                             <TabPane tabId="2">
                                 <FormGroup>
-                                    <Label for="about">Write a few words that describe you</Label>
-                                    <Input type="textarea" onChange={(e) => setAbout(e.target.value)} value={about}/>
+                                    <Label htmlFor={"about"}>Write a few words that describe you</Label>
+                                    <Input id={"about"} type="textarea" onChange={(e) => setAbout(e.target.value)}
+                                           value={about}/>
                                 </FormGroup>
                             </TabPane>
                         </TabContent>
                     </Form>
                 </ModalBody>
+
                 <ModalFooter>
                     <Button color="primary" onClick={(e) => submitForm(e)}>Save</Button>
                 </ModalFooter>
             </Modal>
         </div>
-    )
+    );
 }
 
 const mapStateToProps = (state) => {
     return {
-      profile : state.auth.profile,
-      token: state.auth.token
+        profile: state.auth.profile,
+        token: state.auth.token
+    };
+};
 
-    }
-  }
-  
-  const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = dispatch => {
     return {
         getProfile: () => dispatch(getProfile())
-    }
-  }
-  
-  
-  export default connect(mapStateToProps, mapDispatchToProps)(EditProfileModal)
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(EditProfileModal);

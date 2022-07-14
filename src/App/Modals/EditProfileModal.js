@@ -25,10 +25,11 @@ import Axios from "../../utils/Axios";
 
 function EditProfileModal(props) {
     const [activeTab, setActiveTab] = useState('1');
-    const [status, setStatus] = useState(props.profile.status);
+    const [username, setUsername] = useState(props.profile.username);
     const [firstName, setFirstName] = useState(props.profile.firstName);
     const [lastName, setLastName] = useState(props.profile.lastName);
     const [about, setAbout] = useState(props.profile.about);
+    const [status, setStatus] = useState(props.profile.status);
     const [avatarFile, setAvatarFile] = React.useState(null);
 
     const toggle = tab => {
@@ -39,7 +40,7 @@ function EditProfileModal(props) {
         event.preventDefault();
 
         const formData = new FormData();
-        // TODO: validate firstName and lastName
+        formData.append("username", username);
         formData.append("firstName", firstName);
         formData.append("lastName", lastName);
         formData.append("status", status);
@@ -93,6 +94,12 @@ function EditProfileModal(props) {
                     <Form>
                         <TabContent activeTab={activeTab}>
                             <TabPane tabId="1">
+                                <FormGroup>
+                                    <Label htmlFor={"username"}>Username</Label>
+                                    <Input id={"username"} value={username}
+                                           onChange={(e) => setUsername(e.target.value)}/>
+                                </FormGroup>
+
                                 <FormGroup>
                                     <Label htmlFor={"firstName"}>First Name</Label>
                                     <Input id={"firstName"} value={firstName}

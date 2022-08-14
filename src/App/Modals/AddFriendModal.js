@@ -18,7 +18,7 @@ import Loader from "../../utils/Loader"
 
 // Feather icon
 import * as FeatherIcon from 'react-feather';
-import axios from 'axios';
+import Axios from "../../utils/Axios";
 
 function AddFriendModal() {
     const [modal, setModal] = useState(false);
@@ -43,15 +43,11 @@ function AddFriendModal() {
         setSuccess(false)
         setLoading(true)
         const payload = {
-            username: username.toLowerCase().trim()
+            toUser: username.toLowerCase().trim()
         }
-        const options = {
-            headers:{
-                Authorization: auth.token
-            }
-        }
+
         try {
-            await axios.post("http://localhost:8000/users/request", payload, options)
+            await Axios.post("/friendship/request", payload)
             setSuccess(true)
             setError(null)
             setUsername("")

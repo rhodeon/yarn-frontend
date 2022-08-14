@@ -1,59 +1,58 @@
-import React, {useEffect, useState} from 'react'
-import {useDispatch, useSelector, connect} from 'react-redux'
-import Tour from 'reactour'
-import SidebarIndex from "./Sidebars/index"
-import Navigation from "./Navigation"
-import Profile from "./Sidebars/Profile"
-import Chat from "./Partials/Chat"
-import DisconnectedModal from "../App/Modals/DisconnectedModal"
-import {pageTourAction} from "../Store/Actions/pageTourAction"
+import React, {useEffect, useState} from 'react';
+import {connect, useDispatch, useSelector} from 'react-redux';
+import Tour from 'reactour';
+import SidebarIndex from "./Sidebars/index";
+import Navigation from "./Navigation";
+import Profile from "./Sidebars/Profile";
+import Chat from "./Partials/Chat";
+import {pageTourAction} from "../Store/Actions/pageTourAction";
 import {profileAction} from "../Store/Actions/profileAction";
 import {disconnectedAction} from "../Store/Actions/disconnectedAction";
 
 function Layout(props) {
     const {pageTour} = useSelector(state => state);
-    const dispatch = useDispatch() 
-    const [connected, setConnected] = useState(false)   
+    const dispatch = useDispatch();
+    const [connected, setConnected] = useState(false);
 
     useEffect(() => {
         document.querySelector('*').addEventListener('click', (e) => {
             if (document.body.classList.contains('navigation-open') && e.target.nodeName === 'BODY') {
-                document.body.classList.remove('navigation-open')
+                document.body.classList.remove('navigation-open');
             }
-        // const setup = async() =>{
-        //     console.log("creating");
-        //     const conn = await new WebSocket(`ws://localhost:8282/ws?uid=${props.uid}`)
-        //     console.log(conn);
-        //     setConn(conn)
-        // }
-        // setup() 
-        },[props.uid]);    
+            // const setup = async() =>{
+            //     console.log("creating");
+            //     const conn = await new WebSocket(`ws://localhost:8282/ws?uid=${props.uid}`)
+            //     console.log(conn);
+            //     setConn(conn)
+            // }
+            // setup()
+        }, [props.uid]);
 
         let getDemoParam = (window.location.search).replace('?demo=', '');
 
         if (getDemoParam === 'dark') {
             document.body.classList.add('dark');
-        }else if (getDemoParam === 'rtl') {
+        } else if (getDemoParam === 'rtl') {
             document.body.classList.add('rtl');
-        }else if (getDemoParam === 'user-profile') {
+        } else if (getDemoParam === 'user-profile') {
             dispatch(profileAction(true));
-        }else if (getDemoParam === 'dark-rtl') {
+        } else if (getDemoParam === 'dark-rtl') {
             document.body.classList.add('dark');
             document.body.classList.add('rtl');
         }
-        
+
     }, []);
 
-    useEffect(() =>{
+    useEffect(() => {
         if (connected && props.readyState === 0) {
-            dispatch(disconnectedAction(true))
-        } else if (props.readyState === 1){
-            setConnected(true)
+            dispatch(disconnectedAction(true));
+        } else if (props.readyState === 1) {
+            setConnected(true);
         }
-    }, [props.readyState])
+    }, [props.readyState]);
 
     if (!props.isAuth) {
-        return window.location.href = "/sign-in"
+        return window.location.href = "/sign-in";
     }
 
     const tourSteps = [
@@ -84,14 +83,15 @@ function Layout(props) {
     ];
 
     return (
-        
+
         <div className="layout">
             <Tour
                 steps={tourSteps}
                 isOpen={pageTour}
                 onRequestClose={() => dispatch(pageTourAction(false))}
             />
-            <DisconnectedModal />
+            {/*TODO: Uncomment modal after implementing all requests*/}
+            {/*<DisconnectedModal />*/}
             <div className="content">
                 <Navigation/>
                 <SidebarIndex/>
@@ -99,16 +99,16 @@ function Layout(props) {
                 <Profile/>
             </div>
         </div>
-    )
+    );
 }
 
 const mapStateToProps = (state) => {
     return {
-      isAuth : state.auth.token ? true : false,
-      token: state.auth.token,
-      uid: state.auth.userID,
-      readyState: state.auth.websocket?.readyState ? state.auth.websocket.readyState : 0
-    }
-  }
-  
-export default connect(mapStateToProps)(Layout)
+        isAuth: state.auth.token ? true : false,
+        token: state.auth.token,
+        uid: state.auth.userID,
+        readyState: state.auth.websocket?.readyState ? state.auth.websocket.readyState : 0
+    };
+};
+
+export default connect(mapStateToProps)(Layout);

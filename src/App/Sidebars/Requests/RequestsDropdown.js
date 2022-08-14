@@ -18,7 +18,7 @@ const RequestsDropdown = ({received, ID, fetch}) => {
             id: ID
         }
         try {
-            const response = await Axios.post("users/request/accept", payload)
+            const response = await Axios.post("/friendship/accept", payload)
             console.log(response);
             setLoading(false)
             fetch()
@@ -32,10 +32,10 @@ const RequestsDropdown = ({received, ID, fetch}) => {
     const cancel = async (ID) =>{
         setLoading(true)
         const payload = {
-            ID: ID
+            id: ID
         }
         try {
-            const response = await Axios.post("users/request/delete", payload)
+            const response = await Axios.delete("friendship/delete", {data: payload})
             console.log(response);
             setLoading(false)
             fetch()

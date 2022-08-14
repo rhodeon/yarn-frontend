@@ -1,19 +1,13 @@
+import Axios from "../../utils/Axios";
 
 export const getFriends = () =>{
     return async dispatch => {
         try {
             dispatch({type:"GET_FRIENDS_START"})
-            const response = await fetch("http://localhost:8000/friends", {
-                method: "GET",
-                headers:{
-                    "Content-Type": "application/json",
-                    Authorization: localStorage.getItem("token")
-                }
-            })
-            let data = await response.json()
-            if (!data) {
-                data = []
-            }
+            const response = await Axios.get("/friendship/friends")
+            // TODO: Implement updated messaging API
+            const data =  response.data
+
             dispatch({type:"GET_FRIENDS_SUCCESS", payload:data})
         } catch (error) {
             dispatch({type:"DISCONNECTED", status:true})
